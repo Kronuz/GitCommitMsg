@@ -12,16 +12,8 @@ class GitCommitMsgThread(threading.Thread):
     self.file_name = view.file_name()
     self.start_line = view.rowcol(selected.begin())[0] + 1
     self.end_line = view.rowcol(selected.end())[0] + 1
-    if sublime.platform() == 'windows':
-      cmd = 'echo off && ' \
-        'for /f "tokens=1" %%a in ' \
-        '( \'"git blame "%s" -L %d,%d --root -s -l"\') do ' \
-        'git show --name-status "%%a"'
-    else:
-      cmd = "git show --name-status " \
-        "$(git blame '%s' -L %d,%d | " \
-        "awk '{print $1}')"
-    self.command = cmd % (self.file_name, self.start_line, self.end_line)
+    cmd = "git log --pretty=short -u -L %s,%s:%s"
+    self.command = cmd % (self.start_line, self.end_line, self.file_name)
     self.dir_name = os.path.dirname(self.file_name)
 
   def run(self):
@@ -42,10 +34,6 @@ class GitCommitMsgThread(threading.Thread):
         result = "Selected lines are not committed yet."
     else:
       result = result.decode("utf-8")
-
-    # Separate different commits with an empty line
-    if sublime.platform() == 'windows':
-      result = result.replace("\ncommit", "\n\ncommit")
 
     args = {
       "file_name": self.file_name,
@@ -106,4 +94,3 @@ class GitCommitMsgCommand(sublime_plugin.TextCommand):
   def run(self, edit):
     thread = GitCommitMsgThread(self.view)
     thread.start()
-
