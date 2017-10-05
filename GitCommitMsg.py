@@ -12,8 +12,8 @@ class GitCommitMsgThread(threading.Thread):
     self.file_name = view.file_name()
     self.start_line = view.rowcol(selected.begin())[0] + 1
     self.end_line = view.rowcol(selected.end())[0] + 1
-    cmd = "git log --pretty=short -u -L %s,%s:%s"
-    self.command = cmd % (self.start_line, self.end_line, self.file_name)
+    cmd = "git log --follow --no-merges --pretty=short -u -L %s,%s:%s %s"
+    self.command = cmd % (self.start_line, self.end_line, self.file_name, self.file_name)
     self.dir_name = os.path.dirname(self.file_name)
 
   def run(self):
